@@ -1,0 +1,100 @@
+---
+title: "R Use Cases"
+author: "Noah Lehman"
+date: "February 22, 2018"
+output: html_notebook
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F)
+```
+
+```{r eval=FALSE, include=FALSE}
+#install
+# install.packages("tidyverse")
+# install.packages("nycflights13")
+# install.packages("Lahman")
+```
+
+#Knit to any format 
+1. html
+1. word
+1. pdf
+```{r include=FALSE}
+library(readxl)
+library(printr)
+library(tidyverse)
+library(shiny)
+```
+<br>
+<br>
+
+#Write in any Language!
+python--random number generator
+```{python}
+import random
+i = random.randint(1,100) 
+print('Your number is', i)
+```
+bash--command line scripting
+```{r, engine='sh'}
+ls
+```
+<br>
+<br>
+#Create Interactive Charts 
+```{r}
+ui <- pageWithSidebar(
+  headerPanel('Iris k-means clustering'),
+  sidebarPanel(
+    selectInput('xcol', 'X Variable', names(iris)),
+    selectInput('ycol', 'Y Variable', names(iris),
+                selected=names(iris)[[2]]),
+    numericInput('clusters', 'Cluster count', 3,
+                 min = 1, max = 9)
+  ),
+  mainPanel(
+    plotOutput('plot1')
+  )
+)
+
+server <- function(input, output, session) {
+
+  # Combine the selected variables into a new data frame
+  selectedData <- reactive({
+    iris[, c(input$xcol, input$ycol)]
+  })
+
+  clusters <- reactive({
+    kmeans(selectedData(), input$clusters)
+  })
+
+  output$plot1 <- renderPlot({
+    palette(c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3",
+      "#FF7F00", "#FFFF33", "#A65628", "#F781BF", "#999999"))
+
+    par(mar = c(5.1, 4.1, 0, 1))
+    plot(selectedData(),
+         col = clusters()$cluster,
+         pch = 20, cex = 3)
+    points(clusters()$centers, pch = 4, cex = 4, lwd = 4)
+  })
+
+}
+
+# Create Shiny app ----
+shinyApp(ui = ui, server = server)
+```
+<br>
+<br>
+<br>
+<br>
+<br>
+```{r eval=FALSE, include=FALSE}
+files <- list.files(recursive = T)
+files <- files[grepl("monthly.*xlsx", files)]
+all_files <- lapply(files, function(x){read_excel(x, skip = 1, col_types = "text")}) %>% bind_rows()
+write.xlsx(all_files, file = "Jail Profile Survey Monthly 2002 to 2016.xlsx")
+```
+
